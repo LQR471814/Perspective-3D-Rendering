@@ -73,6 +73,7 @@ Controls = """
 [SHIFT] = Go down
 """
 
+print(Controls)
 pygame.init()
 stop = False
 center = [200, 200]
@@ -83,7 +84,7 @@ screen = pygame.display.set_mode([1280, 720])
 
 screen.fill((0, 0, 0))
 
-def UpdateScr(direction, increment):
+def UpdateScr(increment):
     global b1
     global c1
 
@@ -92,8 +93,8 @@ def UpdateScr(direction, increment):
 
     for vert in b1.getVerts():
         finCoords = []
-        finCoords.append(int(round((vert[0] / (c1.getCoord()[2] - vert[2]) * blocksize) + (direction * ((c1.getCoord()[0] - b1.getCoord()[0]) / c1.getCoord()[2] - b1.getCoord()[2]) * increment), 1)))
-        finCoords.append(int(round((vert[1] / (c1.getCoord()[2] - vert[2]) * blocksize) + (direction * ((c1.getCoord()[1] - b1.getCoord()[1]) / c1.getCoord()[2] - b1.getCoord()[2]) * increment), 1)))
+        finCoords.append(int(round((vert[0] / (c1.getCoord()[2] - vert[2]) * blocksize) + (((c1.getCoord()[0] - b1.getCoord()[0]) / c1.getCoord()[2] - b1.getCoord()[2]) * increment), 1)))
+        finCoords.append(int(round((vert[1] / (c1.getCoord()[2] - vert[2]) * blocksize) + (((c1.getCoord()[1] - b1.getCoord()[1]) / c1.getCoord()[2] - b1.getCoord()[2]) * increment), 1)))
         finCoords = transformCoords(finCoords)
         pygame.draw.circle(screen, (255, 255, 255), finCoords, 3)
 
@@ -101,12 +102,10 @@ def UpdateScr(direction, increment):
         coords1 = []
         coords2 = []
 
-        coords1.append(int(round(b1.getVerts()[edge[0]][0] / (c1.getCoord()[2] - b1.getVerts()[edge[0]][2]) * blocksize + (direction * ((c1.getCoord()[0] - b1.getCoord()[0]) / c1.getCoord()[2] - b1.getCoord()[2]) * increment), 1)))
-        coords1.append(int(round(b1.getVerts()[edge[0]][1] / (c1.getCoord()[2] - b1.getVerts()[edge[0]][2]) * blocksize + (direction * ((c1.getCoord()[0] - b1.getCoord()[0]) / c1.getCoord()[2] - b1.getCoord()[2]) * increment), 1)))
-        coords2.append(int(round(b1.getVerts()[edge[1]][0] / (c1.getCoord()[2] - b1.getVerts()[edge[1]][2]) * blocksize + (direction * ((c1.getCoord()[1] - b1.getCoord()[1]) / c1.getCoord()[2] - b1.getCoord()[2]) * increment), 1)))
-        coords2.append(int(round(b1.getVerts()[edge[1]][1] / (c1.getCoord()[2] - b1.getVerts()[edge[1]][2]) * blocksize + (direction * ((c1.getCoord()[1] - b1.getCoord()[1]) / c1.getCoord()[2] - b1.getCoord()[2]) * increment), 1)))
-
-        print((direction * ((c1.getCoord()[0] - b1.getCoord()[0]) / c1.getCoord()[2] - b1.getCoord()[2]) * increment), (direction * ((c1.getCoord()[1] - b1.getCoord()[1]) / c1.getCoord()[2] - b1.getCoord()[2]) * increment))
+        coords1.append(int(round(b1.getVerts()[edge[0]][0] / (c1.getCoord()[2] - b1.getVerts()[edge[0]][2]) * blocksize + (((c1.getCoord()[0] - b1.getCoord()[0]) / c1.getCoord()[2] - b1.getCoord()[2]) * increment), 1)))
+        coords1.append(int(round(b1.getVerts()[edge[0]][1] / (c1.getCoord()[2] - b1.getVerts()[edge[0]][2]) * blocksize + (((c1.getCoord()[0] - b1.getCoord()[0]) / c1.getCoord()[2] - b1.getCoord()[2]) * increment), 1)))
+        coords2.append(int(round(b1.getVerts()[edge[1]][0] / (c1.getCoord()[2] - b1.getVerts()[edge[1]][2]) * blocksize + (((c1.getCoord()[1] - b1.getCoord()[1]) / c1.getCoord()[2] - b1.getCoord()[2]) * increment), 1)))
+        coords2.append(int(round(b1.getVerts()[edge[1]][1] / (c1.getCoord()[2] - b1.getVerts()[edge[1]][2]) * blocksize + (((c1.getCoord()[1] - b1.getCoord()[1]) / c1.getCoord()[2] - b1.getCoord()[2]) * increment), 1)))
 
         coords1 = transformCoords(coords1)
         coords2 = transformCoords(coords2)
@@ -116,7 +115,7 @@ def UpdateScr(direction, increment):
         b1.reset()
         #pygame.draw.line(screen, (255, 255, 255), coords1, coords2)
 
-UpdateScr(0, 0)
+UpdateScr(0)
 
 while stop == False:
     for event in pygame.event.get():
@@ -131,25 +130,25 @@ while stop == False:
                 sys.exit()
             if event.key == pygame.K_w:
                 c1.setCoord([c1.getCoord()[0], c1.getCoord()[1], c1.getCoord()[2] + 0.1])
-                UpdateScr(0, 0)
+                UpdateScr(0)
             if event.key == pygame.K_a:
                 c1.setCoord([c1.getCoord()[0] - 1, c1.getCoord()[1], c1.getCoord()[2]])
                 # center[0] -= 10
-                UpdateScr(-1, 10)
+                UpdateScr(10)
             if event.key == pygame.K_d:
                 c1.setCoord([c1.getCoord()[0] + 1, c1.getCoord()[1], c1.getCoord()[2]])
                 # center[0] += 10
-                UpdateScr(1, 10)
+                UpdateScr(10)
             if event.key == pygame.K_s:
                 c1.setCoord([c1.getCoord()[0], c1.getCoord()[1], c1.getCoord()[2] - 0.1])
-                UpdateScr(0, 0)
+                UpdateScr(0)
             if event.key == pygame.K_SPACE:
-                # c1.setCoord([c1.getCoord()[0], c1.getCoord()[1] - 0.1, c1.getCoord()[2]])
+                c1.setCoord([c1.getCoord()[0], c1.getCoord()[1] - 1, c1.getCoord()[2]])
                 # center[1] -= 10
-                UpdateScr(-1, 10)
+                UpdateScr(10)
             if event.key == pygame.K_LSHIFT:
-                # c1.setCoord([c1.getCoord()[0], c1.getCoord()[1] + 0.1, c1.getCoord()[2]])
+                c1.setCoord([c1.getCoord()[0], c1.getCoord()[1] + 1, c1.getCoord()[2]])
                 # center[1] += 10
-                UpdateScr(1, 10)
+                UpdateScr(10)
 
     pygame.display.update()
