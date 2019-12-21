@@ -4,13 +4,19 @@ import time
 import sys
 
 class camera:
-    def __init__(self, rot, coord):
+    def __init__(self, rot, coord, strafeSpeed, straightSpeed):
         self.rotation = rot
         self.coord = coord
+        self.speedStrafe = strafeSpeed
+        self.speedStraight = straightSpeed
     def getRotation(self):
         return self.rotation
     def getCoord(self):
         return self.coord
+    def getSpeedStraight(self):
+        return self.speedStraight
+    def getSpeedStrafe(self):
+        return self.speedStrafe
     def setCoord(self, newCoords):
         self.coord = newCoords
 
@@ -34,7 +40,7 @@ class block:
         self.coord = coordinate
 
     def reset(self):
-        self.verts = [[-1, -1, -1], [1, 1, 1], [-1, -1, 1], [1, -1, -1], [-1, 1, -1], [1, -1, 1], [1, 1, -1], [-1, 1, 1], [1, 1, 1]]
+        self.verts = [[-1, -1, -1], [1, 1, 1], [-1, -1, 1], [1, -1, -1], [-1, 1, -1], [1, -1, 1], [1, 1, -1], [-1, 1, 1]]
         self.edges = [[4, 0],
                       [4, 6],
                       [4, 7],
@@ -64,6 +70,37 @@ def transformCoords(coordinates):
     coordinates[1] += center[1]
     return coordinates
 
+def UpdateScr(increment):
+    global b1
+    global c1
+
+    screen.fill((0, 0, 0))
+    print("-----------------------------------------")
+
+    for vert in b1.getVerts():
+        finCoords = []
+        finCoords.append(int(round((vert[0] / (c1.getCoord()[2] - vert[2]) * blocksize) + ((c1.getCoord()[0] - vert[0]) / (c1.getCoord()[2] - vert[2]) * increment), 1)))
+        finCoords.append(int(round((vert[1] / (c1.getCoord()[2] - vert[2]) * blocksize) + ((c1.getCoord()[1] - vert[1]) / (c1.getCoord()[2] - vert[2]) * increment), 1)))
+        finCoords = transformCoords(finCoords)
+        # pygame.draw.circle(screen, (255, 255, 255), finCoords, 3)
+
+    for edge in b1.getEdges():
+        coords1 = []
+        coords2 = []
+
+        coords1.append(int(round((b1.getVerts()[edge[0]][0] / (c1.getCoord()[2] - b1.getVerts()[edge[0]][2])) * blocksize + ((c1.getCoord()[0] - b1.getVerts()[edge[0]][0]) / (c1.getCoord()[2] - b1.getVerts()[edge[0]][2]) * increment), 1)))
+        coords1.append(int(round((b1.getVerts()[edge[0]][1] / (c1.getCoord()[2] - b1.getVerts()[edge[0]][2])) * blocksize + ((c1.getCoord()[1] - b1.getVerts()[edge[0]][1]) / (c1.getCoord()[2] - b1.getVerts()[edge[0]][2]) * increment), 1)))
+
+        coords2.append(int(round((b1.getVerts()[edge[1]][0] / (c1.getCoord()[2] - b1.getVerts()[edge[1]][2])) * blocksize + ((c1.getCoord()[0] - b1.getVerts()[edge[1]][0]) / (c1.getCoord()[2] - b1.getVerts()[edge[1]][2]) * increment), 1)))
+        coords2.append(int(round((b1.getVerts()[edge[1]][1] / (c1.getCoord()[2] - b1.getVerts()[edge[1]][2])) * blocksize + ((c1.getCoord()[1] - b1.getVerts()[edge[1]][1]) / (c1.getCoord()[2] - b1.getVerts()[edge[1]][2]) * increment), 1)))
+        coords1 = transformCoords(coords1)
+        coords2 = transformCoords(coords2)
+
+        print(coords1, coords2)
+
+        b1.reset()
+        pygame.draw.line(screen, (255, 255, 255), coords1, coords2)
+
 Controls = """
 [W] = Go forward
 [S] = Go backward
@@ -78,77 +115,52 @@ pygame.init()
 stop = False
 center = [200, 200]
 blocksize = 100
-c1 = camera((0, 0), (0, 0, 2))
+c1 = camera((0, 0), (0, 0, 2), 3, 0.05)
 b1 = block((0, 0, 0))
 screen = pygame.display.set_mode([1280, 720])
 
 screen.fill((0, 0, 0))
 
-def UpdateScr(increment):
-    global b1
-    global c1
-
-    screen.fill((0, 0, 0))
-    print("-----------------------------------------")
-
-    for vert in b1.getVerts():
-        finCoords = []
-        finCoords.append(int(round((vert[0] / (c1.getCoord()[2] - vert[2]) * blocksize) + (((c1.getCoord()[0] - b1.getCoord()[0]) / c1.getCoord()[2] - b1.getCoord()[2]) * increment), 1)))
-        finCoords.append(int(round((vert[1] / (c1.getCoord()[2] - vert[2]) * blocksize) + (((c1.getCoord()[1] - b1.getCoord()[1]) / c1.getCoord()[2] - b1.getCoord()[2]) * increment), 1)))
-        finCoords = transformCoords(finCoords)
-        pygame.draw.circle(screen, (255, 255, 255), finCoords, 3)
-
-    for edge in b1.getEdges():
-        coords1 = []
-        coords2 = []
-
-        coords1.append(int(round(b1.getVerts()[edge[0]][0] / (c1.getCoord()[2] - b1.getVerts()[edge[0]][2]) * blocksize + (((c1.getCoord()[0] - b1.getCoord()[0]) / c1.getCoord()[2] - b1.getCoord()[2]) * increment), 1)))
-        coords1.append(int(round(b1.getVerts()[edge[0]][1] / (c1.getCoord()[2] - b1.getVerts()[edge[0]][2]) * blocksize + (((c1.getCoord()[0] - b1.getCoord()[0]) / c1.getCoord()[2] - b1.getCoord()[2]) * increment), 1)))
-        coords2.append(int(round(b1.getVerts()[edge[1]][0] / (c1.getCoord()[2] - b1.getVerts()[edge[1]][2]) * blocksize + (((c1.getCoord()[1] - b1.getCoord()[1]) / c1.getCoord()[2] - b1.getCoord()[2]) * increment), 1)))
-        coords2.append(int(round(b1.getVerts()[edge[1]][1] / (c1.getCoord()[2] - b1.getVerts()[edge[1]][2]) * blocksize + (((c1.getCoord()[1] - b1.getCoord()[1]) / c1.getCoord()[2] - b1.getCoord()[2]) * increment), 1)))
-
-        coords1 = transformCoords(coords1)
-        coords2 = transformCoords(coords2)
-
-        print(coords1, coords2)
-
-        b1.reset()
-        #pygame.draw.line(screen, (255, 255, 255), coords1, coords2)
-
-UpdateScr(0)
+UpdateScr(c1.getSpeedStrafe())
+pygame.display.update()
 
 while stop == False:
+    keystate = pygame.key.get_pressed()
+
+    if keystate[pygame.K_ESCAPE]:
+        stop = True
+        pygame.quit()
+        sys.exit()
+
+    if keystate[pygame.K_w]:
+        c1.setCoord([c1.getCoord()[0], c1.getCoord()[1], c1.getCoord()[2] - c1.getSpeedStraight()])
+        UpdateScr(c1.getSpeedStrafe())
+
+    if keystate[pygame.K_a]:
+        c1.setCoord([c1.getCoord()[0] - 1, c1.getCoord()[1], c1.getCoord()[2]])
+        UpdateScr(c1.getSpeedStrafe())
+
+    if keystate[pygame.K_d]:
+        c1.setCoord([c1.getCoord()[0] + 1, c1.getCoord()[1], c1.getCoord()[2]])
+        UpdateScr(c1.getSpeedStrafe())
+
+    if keystate[pygame.K_s]:
+        c1.setCoord([c1.getCoord()[0], c1.getCoord()[1], c1.getCoord()[2] + c1.getSpeedStraight()])
+        UpdateScr(c1.getSpeedStrafe())
+
+    if keystate[pygame.K_SPACE]:
+        c1.setCoord([c1.getCoord()[0], c1.getCoord()[1] - 1, c1.getCoord()[2]])
+        UpdateScr(c1.getSpeedStrafe())
+
+    if keystate[pygame.K_LSHIFT]:
+        c1.setCoord([c1.getCoord()[0], c1.getCoord()[1] + 1, c1.getCoord()[2]])
+        UpdateScr(c1.getSpeedStrafe())
+
     for event in pygame.event.get():
         if event.type == QUIT:
             stop = True
             pygame.quit()
             sys.exit()
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                stop = True
-                pygame.quit()
-                sys.exit()
-            if event.key == pygame.K_w:
-                c1.setCoord([c1.getCoord()[0], c1.getCoord()[1], c1.getCoord()[2] + 0.1])
-                UpdateScr(0)
-            if event.key == pygame.K_a:
-                c1.setCoord([c1.getCoord()[0] - 1, c1.getCoord()[1], c1.getCoord()[2]])
-                # center[0] -= 10
-                UpdateScr(10)
-            if event.key == pygame.K_d:
-                c1.setCoord([c1.getCoord()[0] + 1, c1.getCoord()[1], c1.getCoord()[2]])
-                # center[0] += 10
-                UpdateScr(10)
-            if event.key == pygame.K_s:
-                c1.setCoord([c1.getCoord()[0], c1.getCoord()[1], c1.getCoord()[2] - 0.1])
-                UpdateScr(0)
-            if event.key == pygame.K_SPACE:
-                c1.setCoord([c1.getCoord()[0], c1.getCoord()[1] - 1, c1.getCoord()[2]])
-                # center[1] -= 10
-                UpdateScr(10)
-            if event.key == pygame.K_LSHIFT:
-                c1.setCoord([c1.getCoord()[0], c1.getCoord()[1] + 1, c1.getCoord()[2]])
-                # center[1] += 10
-                UpdateScr(10)
 
     pygame.display.update()
+
