@@ -2,6 +2,7 @@ import pygame
 from pygame.locals import *
 import time
 import sys
+import math
 
 class camera:
     def __init__(self, rot, coord, strafeSpeed, straightSpeed):
@@ -9,16 +10,53 @@ class camera:
         self.coord = coord
         self.speedStrafe = strafeSpeed
         self.speedStraight = straightSpeed
+
     def getRotation(self):
         return self.rotation
+
     def getCoord(self):
         return self.coord
     def getSpeedStraight(self):
         return self.speedStraight
+
     def getSpeedStrafe(self):
         return self.speedStrafe
+
     def setCoord(self, newCoords):
         self.coord = newCoords
+
+    def rotateX(self, RotationCenter, radians, verticies):
+        (cx, cy, cz) = RotationCenter
+        for vertex in verticies:
+            y = vertex[1] - cy
+            z = vertex[2] - cz
+            d = math.hypot(y, z)
+            theta = math.atan2(y, z) + radians
+            vertex[2] = cz + d * math.cos(theta)
+            vertex[1] = cy + d * math.sin(theta)
+        return verticies
+
+    def rotateY(self, RotationCenter, radians, verticies):
+        (cx, cy, cz) = RotationCenter
+        for vertex in verticies:
+            x = vertex[0] - cx
+            z = vertex[2] - cz
+            d = math.hypot(x, z)
+            theta = math.atan2(x, z) + radians
+            vertex[2] = cz + d * math.cos(theta)
+            vertex[0] = cx + d * math.sin(theta)
+        return verticies
+
+    def rotateZ(self, RotationCenter, radians, verticies):
+        (cx, cy, cz) = RotationCenter
+        for vertex in verticies:
+            x = vertex[0] - cx
+            y = vertex[1] - cy
+            d = math.hypot(y, x)
+            theta = math.atan2(y, x) + radians
+            vertex[0] = cx + d * math.cos(theta)
+            vertex[1] = cy + d * math.sin(theta)
+        return verticies
 
 class block:
     def __init__(self, coordinate):
@@ -57,12 +95,50 @@ class block:
                       ]
     def getVerts(self):
         return self.verts
+
     def getEdges(self):
         return self.edges
+
     def getCoord(self):
         return self.coord
+
     def setCoord(self, newCoords):
         self.coord = newCoords
+
+    def rotateX(self, RotationCenter, radians, verticies):
+        (cx, cy, cz) = RotationCenter
+        for vertex in verticies:
+            y = vertex[1] - cy
+            z = vertex[2] - cz
+            d = math.hypot(y, z)
+            theta = math.atan2(y, z) + radians
+            vertex[2] = cz + d * math.cos(theta)
+            vertex[1] = cy + d * math.sin(theta)
+        return verticies
+
+    def rotateY(self, RotationCenter, radians, verticies):
+        (cx, cy, cz) = RotationCenter
+        for vertex in verticies:
+            x = vertex[0] - cx
+            z = vertex[2] - cz
+            d = math.hypot(x, z)
+            theta = math.atan2(x, z) + radians
+            vertex[2] = cz + d * math.cos(theta)
+            vertex[0] = cx + d * math.sin(theta)
+        return verticies
+
+    def rotateZ(self, RotationCenter, radians, verticies):
+        (cx, cy, cz) = RotationCenter
+        print(verticies)
+        print(cx, cy, cz)
+        for vertex in verticies:
+            x = vertex[0] - cx
+            y = vertex[1] - cy
+            d = math.hypot(y, x)
+            theta = math.atan2(y, x) + radians
+            vertex[0] = cx + d * math.cos(theta)
+            vertex[1] = cy + d * math.sin(theta)
+        return verticies
 
 def transformCoords(coordinates):
     global center
@@ -82,7 +158,7 @@ def UpdateScr(increment):
         finCoords.append(int(round((vert[0] / (c1.getCoord()[2] - vert[2]) * blocksize) + ((c1.getCoord()[0] - vert[0]) / (c1.getCoord()[2] - vert[2]) * increment), 1)))
         finCoords.append(int(round((vert[1] / (c1.getCoord()[2] - vert[2]) * blocksize) + ((c1.getCoord()[1] - vert[1]) / (c1.getCoord()[2] - vert[2]) * increment), 1)))
         finCoords = transformCoords(finCoords)
-        # pygame.draw.circle(screen, (255, 255, 255), finCoords, 3)
+        pygame.draw.circle(screen, (255, 255, 255), finCoords, 3)
 
     for edge in b1.getEdges():
         coords1 = []
@@ -108,6 +184,8 @@ Controls = """
 [D] = Go right
 [SPACE] = Go up
 [SHIFT] = Go down
+[LEFT] = Rotate Left
+[RIGHT] = Rotate Right
 """
 
 print(Controls)
@@ -131,6 +209,12 @@ while stop == False:
         stop = True
         pygame.quit()
         sys.exit()
+
+    if keystate[pygame.K_LEFT]:
+        b1.setCoord([b1.rotateZ(RotationCenter=b1.getCoord(), radians=c1.getRotation()[0] - 0.1, verticies=b1.getVerts()), b1.getCoord()[1], b1.getCoord()[2]])
+
+    if keystate[pygame.K_LEFT]:
+        b1.setCoord([b1.rotateZ(RotationCenter=b1.getCoord(), radians=c1.getRotation()[0] + 0.1, verticies=b1.getVerts()), b1.getCoord()[1], b1.getCoord()[2]])
 
     if keystate[pygame.K_w]:
         c1.setCoord([c1.getCoord()[0], c1.getCoord()[1], c1.getCoord()[2] - c1.getSpeedStraight()])
