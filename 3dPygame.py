@@ -3,6 +3,7 @@ from pygame.locals import *
 import time
 import sys
 import math
+import numpy
 
 class camera:
     def __init__(self, rot, coord, strafeSpeed, straightSpeed):
@@ -23,7 +24,6 @@ class camera:
 
 class block:
     def __init__(self, coordinate, rotation):
-        self.rotationIncrementRho = 0
         self.rotationIncrement = 0.01
         self.rotationIncrementTheta = 0
         self.rotationIncrementPhi = 0
@@ -85,11 +85,7 @@ def UpdateScr(increment, block):
     global c1
 
     screen.fill((0, 0, 0))
-
-    RotatedVerts = []
-
-    for vert in b1.getVerts():
-        RotatedVerts.append(Rotate3D(vert, block))
+    # print("-----------------------------------------")
 
     for vert in b1.getVerts():
         finCoords = []
@@ -97,22 +93,24 @@ def UpdateScr(increment, block):
         finCoords.append(int(round((vert[0] / (c1.getCoord()[2] - vert[2]) * blocksize) + ((c1.getCoord()[0] - vert[0]) / (c1.getCoord()[2] - vert[2]) * increment), 1)))
         finCoords.append(int(round((vert[1] / (c1.getCoord()[2] - vert[2]) * blocksize) + ((c1.getCoord()[1] - vert[1]) / (c1.getCoord()[2] - vert[2]) * increment), 1)))
         finCoords = transformCoords(finCoords)
+        # print(Rotate3D(vert, block))
         pygame.draw.circle(screen, (255, 255, 255), RotateCoords(finCoords, block), 3)
+        # pygame.draw.circle(screen, (255, 255, 255), finCoords, 3)
 
     for edge in b1.getEdges():
         coords1 = []
         coords2 = []
 
-        coords1.append(int(round((RotatedVerts[edge[0]][0] / (c1.getCoord()[2] - RotatedVerts[edge[0]][2])) * blocksize + ((c1.getCoord()[0] - RotatedVerts[edge[0]][0]) / (c1.getCoord()[2] - RotatedVerts[edge[0]][2]) * increment), 1)))
-        coords1.append(int(round((RotatedVerts[edge[0]][1] / (c1.getCoord()[2] - RotatedVerts[edge[0]][2])) * blocksize + ((c1.getCoord()[1] - RotatedVerts[edge[0]][1]) / (c1.getCoord()[2] - RotatedVerts[edge[0]][2]) * increment), 1)))
+        coords1.append(int(round((b1.getVerts()[edge[0]][0] / (c1.getCoord()[2] - b1.getVerts()[edge[0]][2])) * blocksize + ((c1.getCoord()[0] - b1.getVerts()[edge[0]][0]) / (c1.getCoord()[2] - b1.getVerts()[edge[0]][2]) * increment), 1)))
+        coords1.append(int(round((b1.getVerts()[edge[0]][1] / (c1.getCoord()[2] - b1.getVerts()[edge[0]][2])) * blocksize + ((c1.getCoord()[1] - b1.getVerts()[edge[0]][1]) / (c1.getCoord()[2] - b1.getVerts()[edge[0]][2]) * increment), 1)))
 
-        coords2.append(int(round((RotatedVerts[edge[1]][0] / (c1.getCoord()[2] - RotatedVerts[edge[1]][2])) * blocksize + ((c1.getCoord()[0] - RotatedVerts[edge[1]][0]) / (c1.getCoord()[2] - RotatedVerts[edge[1]][2]) * increment), 1)))
-        coords2.append(int(round((RotatedVerts[edge[1]][1] / (c1.getCoord()[2] - RotatedVerts[edge[1]][2])) * blocksize + ((c1.getCoord()[1] - RotatedVerts[edge[1]][1]) / (c1.getCoord()[2] - RotatedVerts[edge[1]][2]) * increment), 1)))
+        coords2.append(int(round((b1.getVerts()[edge[1]][0] / (c1.getCoord()[2] - b1.getVerts()[edge[1]][2])) * blocksize + ((c1.getCoord()[0] - b1.getVerts()[edge[1]][0]) / (c1.getCoord()[2] - b1.getVerts()[edge[1]][2]) * increment), 1)))
+        coords2.append(int(round((b1.getVerts()[edge[1]][1] / (c1.getCoord()[2] - b1.getVerts()[edge[1]][2])) * blocksize + ((c1.getCoord()[1] - b1.getVerts()[edge[1]][1]) / (c1.getCoord()[2] - b1.getVerts()[edge[1]][2]) * increment), 1)))
         coords1 = transformCoords(coords1)
         coords2 = transformCoords(coords2)
 
         b1.reset()
-        pygame.draw.line(screen, (255, 255, 255), RotateCoords(coords1, block), RotateCoords(coords2, block))
+        # pygame.draw.line(screen, (255, 255, 255), coords1, coords2)
     time.sleep(0.005)
 
 def RotateCoords(coordinates, block):
@@ -136,9 +134,26 @@ def Rotate3D(coordinates, block):
     sphericalCoordinates[1] = math.atan2(returnCoordinates[1], returnCoordinates[0])
     sphericalCoordinates[2] = math.acos(returnCoordinates[2] / ( math.sqrt(returnCoordinates[0] ** 2 + returnCoordinates[1] ** 2 + returnCoordinates[2] ** 2)))
 
-    sphericalCoordinates[0] += block.rotationIncrementRho
     sphericalCoordinates[1] += block.rotationIncrementTheta
     sphericalCoordinates[2] += block.rotationIncrementPhi
+
+    Rx = numpy.array([[1, 0, 0], [0, math.cos(sphericalCoordinates[1]), -math.sin(sphericalCoordinates[1])], [0, math.sin(sphericalCoordinates[1]), math.cos(sphericalCoordinates[1])]]) #? Roll
+    Ry = numpy.array([[math.cos(sphericalCoordinates[1]), 0, math.sin(sphericalCoordinates[1])], [0, 1, 0], [-math.sin(sphericalCoordinates[1]), 0, math.cos(sphericalCoordinates[1])]]) #? Pitch
+    Rz = numpy.array([[math.cos(sphericalCoordinates[1]), -math.sin(sphericalCoordinates[1]), 0], [math.sin(sphericalCoordinates[1]), math.cos(sphericalCoordinates[1]), 0], [0, 0, 1]]) #? Yaw
+
+    # returnCoordinates = Rx.dot(numpy.array(returnCoordinates)) + Ry.dot(numpy.array(returnCoordinates)) #? Rotation Using Matrix
+
+    #? Rotation around Z axis
+    # returnCoordinates[0] = returnCoordinates[0] * math.cos(sphericalCoordinates[1]) - returnCoordinates[1] * math.sin(sphericalCoordinates[1])
+    # returnCoordinates[1] = returnCoordinates[0] * math.sin(sphericalCoordinates[1]) + returnCoordinates[1] * math.cos(sphericalCoordinates[1])
+
+    #? Rotation around Y axis
+    # returnCoordinates[0] = returnCoordinates[0] * math.cos(sphericalCoordinates[1]) + returnCoordinates[2] * math.sin(sphericalCoordinates[1])
+    # returnCoordinates[2] = -returnCoordinates[0] * math.sin(sphericalCoordinates[1]) + returnCoordinates[2] * math.cos(sphericalCoordinates[1])
+
+    #? Rotation around X axis
+    # returnCoordinates[1] = returnCoordinates[1] * math.cos(sphericalCoordinates[1]) - returnCoordinates[2] * math.sin(sphericalCoordinates[1])
+    # returnCoordinates[2] = returnCoordinates[1] * math.sin(sphericalCoordinates[1]) + returnCoordinates[2] * math.cos(sphericalCoordinates[1])
 
     returnCoordinates[0] = sphericalCoordinates[0] * math.sin(sphericalCoordinates[2]) * math.cos(sphericalCoordinates[1])
     returnCoordinates[1] = sphericalCoordinates[0] * math.sin(sphericalCoordinates[2]) * math.sin(sphericalCoordinates[1])
@@ -159,8 +174,6 @@ Controls = """
 [RIGHT] = Rotate clockwise around center of object
 [UP] = Some weird ping pong thing
 [DOWN] = Some weird ping pong thing
-[=] =  Modify Rho Positively (Zoom in)
-[-] = Modify Rho Negatively (Zoom out)
 """
 
 print(Controls)
@@ -184,14 +197,6 @@ while stop == False:
         stop = True
         pygame.quit()
         sys.exit()
-
-    if keystate[pygame.K_EQUALS]:
-        b1.rotationIncrementRho += 0.05
-        UpdateScr(c1.getSpeedStrafe(), b1)
-
-    if keystate[pygame.K_MINUS]:
-        b1.rotationIncrementRho += -0.05
-        UpdateScr(c1.getSpeedStrafe(), b1)
 
     if keystate[pygame.K_w]:
         c1.setCoord([c1.getCoord()[0], c1.getCoord()[1], c1.getCoord()[2] - c1.getSpeedStraight()])
