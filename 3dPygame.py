@@ -87,12 +87,15 @@ def UpdateScr(increment, block):
     screen.fill((0, 0, 0))
     # print("-----------------------------------------")
 
+    print("----------------->")
     for vert in b1.getVerts():
         finCoords = []
+        # vert = Rotate3D(vert, block)
         vert = Rotate3D(vert, block)
         finCoords.append(int(round((vert[0] / (c1.getCoord()[2] - vert[2]) * blocksize) + ((c1.getCoord()[0] - vert[0]) / (c1.getCoord()[2] - vert[2]) * increment), 1)))
         finCoords.append(int(round((vert[1] / (c1.getCoord()[2] - vert[2]) * blocksize) + ((c1.getCoord()[1] - vert[1]) / (c1.getCoord()[2] - vert[2]) * increment), 1)))
         finCoords = transformCoords(finCoords)
+        print(finCoords)
         # print(Rotate3D(vert, block))
         pygame.draw.circle(screen, (255, 255, 255), RotateCoords(finCoords, block), 3)
         # pygame.draw.circle(screen, (255, 255, 255), finCoords, 3)
@@ -106,6 +109,7 @@ def UpdateScr(increment, block):
 
         coords2.append(int(round((b1.getVerts()[edge[1]][0] / (c1.getCoord()[2] - b1.getVerts()[edge[1]][2])) * blocksize + ((c1.getCoord()[0] - b1.getVerts()[edge[1]][0]) / (c1.getCoord()[2] - b1.getVerts()[edge[1]][2]) * increment), 1)))
         coords2.append(int(round((b1.getVerts()[edge[1]][1] / (c1.getCoord()[2] - b1.getVerts()[edge[1]][2])) * blocksize + ((c1.getCoord()[1] - b1.getVerts()[edge[1]][1]) / (c1.getCoord()[2] - b1.getVerts()[edge[1]][2]) * increment), 1)))
+
         coords1 = transformCoords(coords1)
         coords2 = transformCoords(coords2)
 
@@ -130,18 +134,19 @@ def Rotate3D(coordinates, block):
     sphericalCoordinates = [0, 0, 0]
     returnCoordinates = coordinates
 
-    sphericalCoordinates[0] = math.sqrt(returnCoordinates[0] ** 2 + returnCoordinates[1] ** 2 + returnCoordinates[2] ** 2)
-    sphericalCoordinates[1] = math.atan2(returnCoordinates[1], returnCoordinates[0])
-    sphericalCoordinates[2] = math.acos(returnCoordinates[2] / ( math.sqrt(returnCoordinates[0] ** 2 + returnCoordinates[1] ** 2 + returnCoordinates[2] ** 2)))
+    # sphericalCoordinates[0] = math.sqrt(returnCoordinates[0] ** 2 + returnCoordinates[1] ** 2 + returnCoordinates[2] ** 2)
+    # sphericalCoordinates[1] = math.atan2(returnCoordinates[1], returnCoordinates[0])
+    # sphericalCoordinates[2] = math.acos(returnCoordinates[2] / ( math.sqrt(returnCoordinates[0] ** 2 + returnCoordinates[1] ** 2 + returnCoordinates[2] ** 2)))
+    # sphericalCoordinates = []
 
-    sphericalCoordinates[1] += block.rotationIncrementTheta
+    # sphericalCoordinates[1] += block.rotationIncrementTheta
     sphericalCoordinates[2] += block.rotationIncrementPhi
 
-    Rx = numpy.array([[1, 0, 0], [0, math.cos(sphericalCoordinates[1]), -math.sin(sphericalCoordinates[1])], [0, math.sin(sphericalCoordinates[1]), math.cos(sphericalCoordinates[1])]]) #? Roll
-    Ry = numpy.array([[math.cos(sphericalCoordinates[1]), 0, math.sin(sphericalCoordinates[1])], [0, 1, 0], [-math.sin(sphericalCoordinates[1]), 0, math.cos(sphericalCoordinates[1])]]) #? Pitch
-    Rz = numpy.array([[math.cos(sphericalCoordinates[1]), -math.sin(sphericalCoordinates[1]), 0], [math.sin(sphericalCoordinates[1]), math.cos(sphericalCoordinates[1]), 0], [0, 0, 1]]) #? Yaw
+    Rx = numpy.array([[1, 0, 0], [0, math.cos(sphericalCoordinates[2]), -math.sin(sphericalCoordinates[2])], [0, math.sin(sphericalCoordinates[2]), math.cos(sphericalCoordinates[2])]])
+    Ry = numpy.array([[math.cos(sphericalCoordinates[2]), 0, math.sin(sphericalCoordinates[2])], [0, 1, 0], [-math.sin(sphericalCoordinates[2]), 0, math.cos(sphericalCoordinates[2])]])
+    Rz = numpy.array([[math.cos(sphericalCoordinates[2]), -math.sin(sphericalCoordinates[2]), 0], [math.sin(sphericalCoordinates[2]), math.cos(sphericalCoordinates[2]), 0], [0, 0, 1]])
 
-    # returnCoordinates = Rx.dot(numpy.array(returnCoordinates)) + Ry.dot(numpy.array(returnCoordinates)) #? Rotation Using Matrix
+    returnCoordinates = Rx.dot(numpy.array(returnCoordinates)) #? Rotation Using Matrix
 
     #? Rotation around Z axis
     # returnCoordinates[0] = returnCoordinates[0] * math.cos(sphericalCoordinates[1]) - returnCoordinates[1] * math.sin(sphericalCoordinates[1])
@@ -155,9 +160,9 @@ def Rotate3D(coordinates, block):
     # returnCoordinates[1] = returnCoordinates[1] * math.cos(sphericalCoordinates[1]) - returnCoordinates[2] * math.sin(sphericalCoordinates[1])
     # returnCoordinates[2] = returnCoordinates[1] * math.sin(sphericalCoordinates[1]) + returnCoordinates[2] * math.cos(sphericalCoordinates[1])
 
-    returnCoordinates[0] = sphericalCoordinates[0] * math.sin(sphericalCoordinates[2]) * math.cos(sphericalCoordinates[1])
-    returnCoordinates[1] = sphericalCoordinates[0] * math.sin(sphericalCoordinates[2]) * math.sin(sphericalCoordinates[1])
-    returnCoordinates[2] = sphericalCoordinates[0] * math.cos(sphericalCoordinates[2])
+    # returnCoordinates[0] = sphericalCoordinates[0] * math.sin(sphericalCoordinates[2]) * math.cos(sphericalCoordinates[1])
+    # returnCoordinates[1] = sphericalCoordinates[0] * math.sin(sphericalCoordinates[2]) * math.sin(sphericalCoordinates[1])
+    # returnCoordinates[2] = sphericalCoordinates[0] * math.cos(sphericalCoordinates[2])
 
     return returnCoordinates
 
@@ -182,7 +187,7 @@ stop = False
 center = [300, 300]
 blocksize = 100
 c1 = camera((0, 0), (0, 0, 2), 3, 0.05)
-b1 = block((0, 0, 0), 0)
+b1 = block([0.01, 0.01, 0.01], 0)
 screen = pygame.display.set_mode([1280, 720])
 
 screen.fill((0, 0, 0))
@@ -231,19 +236,19 @@ while stop == False:
         UpdateScr(c1.getSpeedStrafe(), b1)
 
     if keystate[pygame.K_RIGHT]:
-        b1.rotationIncrementTheta += 0.05
+        b1.rotationIncrementTheta += 0.025
         UpdateScr(c1.getSpeedStrafe(), b1)
 
     if keystate[pygame.K_LEFT]:
-        b1.rotationIncrementTheta += -0.05
+        b1.rotationIncrementTheta += -0.025
         UpdateScr(c1.getSpeedStrafe(), b1)
 
     if keystate[pygame.K_UP]:
-        b1.rotationIncrementPhi += 0.05
+        b1.rotationIncrementPhi += 0.025
         UpdateScr(c1.getSpeedStrafe(), b1)
 
     if keystate[pygame.K_DOWN]:
-        b1.rotationIncrementPhi += -0.05
+        b1.rotationIncrementPhi += -0.025
         UpdateScr(c1.getSpeedStrafe(), b1)
 
     for event in pygame.event.get():
